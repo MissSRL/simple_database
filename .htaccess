@@ -1,0 +1,16 @@
+# Simple Database Manager - Minimal Configuration
+RewriteEngine On
+
+# Handle specific routes
+RewriteRule ^view/?$ view.php [QSA,L]
+RewriteRule ^insert/?$ insert.php [QSA,L]
+RewriteRule ^query/?$ query.php [QSA,L]
+RewriteRule ^backup/?$ backup.php [QSA,L]
+
+# Default route to index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Disable directory browsing
+Options -Indexes
