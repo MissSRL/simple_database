@@ -2,13 +2,11 @@
 
 A secure, web-based MySQL database management tool designed for developers and database administrators. Built with PHP and featuring a modern dark green theme, this application provides an intuitive interface for database operations while maintaining enterprise-level security standards.
 
-?? **[Live Demo](https://5earle.com/database)** | ?? [Documentation](#-installation--setup) | ?? [Quick Start](#quick-start)
+ **[Live Demo](https://5earle.com/database)** |  [Documentation](#-installation--setup) |  [Quick Start](#quick-start)
 
-![Database Manager Screenshot](assets/images/screenshot.png)
+##  Features
 
-## ? Features
-
-### ?? Security First
+###  Security First
 - **CSRF Protection**: All forms protected with secure tokens
 - **Rate Limiting**: Prevents brute force attacks (10 attempts per 15 minutes)
 - **Input Sanitization**: XSS and SQL injection protection
@@ -16,26 +14,26 @@ A secure, web-based MySQL database management tool designed for developers and d
 - **No Credential Storage**: Database credentials stored only in secure PHP sessions
 - **Security Headers**: Comprehensive .htaccess security configuration
 
-### ?? Database Operations
+###  Database Operations
 - **Multi-Table Management**: View, browse, and manage multiple database tables
 - **Query Builder**: Interactive SQL query interface with syntax highlighting
 - **Data Insertion**: Add new records with form validation
 - **Table Browsing**: Paginated table data with column information
 - **Real-time Previews**: Preview queries before execution
 
-### ?? User Interface
+###  User Interface
 - **Dark Theme**: Professional dark green color scheme
 - **Responsive Design**: Works on desktop, tablet, and mobile devices
 - **Bootstrap 5**: Modern, accessible UI components
 - **Real-time Feedback**: Success/error messages and loading states
 - **Intuitive Navigation**: Clean sidebar and menu system
 
-### ?? Performance
+###  Performance
 - **Efficient Pagination**: Handle large datasets with smart pagination
 - **Connection Pooling**: Optimized database connection management
 - **Minimal Dependencies**: Lightweight with essential features only
 
-## ??? Installation & Setup
+##  Installation & Setup
 
 ### Prerequisites
 - **PHP 7.4+** with PDO MySQL extension
@@ -64,12 +62,12 @@ A secure, web-based MySQL database management tool designed for developers and d
    - Enter your MySQL database credentials
    - Start managing your database!
 
-> ?? **Try it first**: Check out the [live demo](https://5earle.com/database) to see the application in action before installing.
+>  **Try it first**: Check out the [live demo](https://5earle.com/database) to see the application in action before installing.
 
 ### Nginx Configuration Example
 ```nginx
 location / {
-    try_files $uri $uri/ /index.php?$query_string;
+    try_files $uri $uri/ /index.php$query_string;
 }
 
 location ~ \.php$ {
@@ -86,7 +84,7 @@ add_header X-XSS-Protection "1; mode=block" always;
 add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 ```
 
-## ?? Security Features
+##  Security Features
 
 ### Built-in Protections
 - **CSRF Tokens**: Every form submission requires a valid CSRF token
@@ -113,7 +111,7 @@ Header always set Referrer-Policy "strict-origin-when-cross-origin"
 Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 ```
 
-## ?? Usage Guide
+##  Usage Guide
 
 ### Connecting to a Database
 1. Enter your MySQL server details:
@@ -143,31 +141,31 @@ Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 3. Fill in the form fields
 4. Submit to add the new record
 
-## ??? Architecture
+##  Architecture
 
 ### File Structure
 ```
 simple-database-manager/
-??? api/
-?   ??? database.php          # Database API endpoints
-??? assets/
-?   ??? css/
-?   ?   ??? style.css         # Custom styling and dark theme
-?   ??? js/
-?       ??? app.js           # Main application JavaScript
-?       ??? query.js         # Query builder functionality
-?       ??? view.js          # Table view interactions
-??? includes/
-?   ??? config.php           # Configuration settings
-?   ??? functions.php        # Core PHP functions
-?   ??? get_columns.php      # Column information API
-?   ??? preview_query.php    # Query preview functionality
-??? index.php                # Main entry point
-??? view.php                 # Table viewing interface
-??? query.php                # Query builder interface
-??? insert.php               # Data insertion interface
-??? .htaccess                # Apache configuration
-??? README.md                # This file
+ api/
+    database.php          # Database API endpoints
+ assets/
+    css/
+       style.css         # Custom styling and dark theme
+    js/
+        app.js           # Main application JavaScript
+        query.js         # Query builder functionality
+        view.js          # Table view interactions
+ includes/
+    config.php           # Configuration settings
+    functions.php        # Core PHP functions
+    get_columns.php      # Column information API
+    preview_query.php    # Query preview functionality
+ index.php                # Main entry point
+ view.php                 # Table viewing interface
+ query.php                # Query builder interface
+ insert.php               # Data insertion interface
+ .htaccess                # Apache configuration
+ README.md                # This file
 ```
 
 ### Technology Stack
@@ -177,41 +175,21 @@ simple-database-manager/
 - **Security**: CSRF tokens, rate limiting, input sanitization
 - **Styling**: Custom CSS with dark green theme
 
-## ?? Use Cases
-
-### Development Teams
-- **Local Development**: Quick database browsing during development
-- **Debugging**: Execute queries to troubleshoot issues
-- **Data Exploration**: Understand database structure and relationships
-- **Testing**: Insert test data and verify database states
-
-### Database Administrators
-- **Quick Maintenance**: Perform routine database operations
-- **Data Auditing**: Browse and verify data integrity
-- **Emergency Access**: Lightweight alternative to heavy database tools
-- **Training**: Teach SQL and database concepts
-
-### Small Projects
-- **Startups**: Cost-effective database management solution
-- **Personal Projects**: Simple interface for hobby databases
-- **Prototyping**: Rapid database interaction for proof-of-concepts
-- **Client Demos**: Show database contents to stakeholders
-
-## ??? Security Considerations
+##  Security Considerations
 
 ### Recommended for:
-- ? Development environments
-- ? Internal tools with trusted users
-- ? Small teams with proper access controls
-- ? Localhost/private network usage
+-  Development environments
+-  Internal tools with trusted users
+-  Small teams with proper access controls
+-  Localhost/private network usage
 
 ### Not recommended for:
-- ? Public-facing production environments without additional security
-- ? Shared hosting without HTTPS
-- ? Environments with untrusted users
-- ? Critical production databases without backup procedures
+-  Public-facing production environments without additional security
+-  Shared hosting without HTTPS
+-  Environments with untrusted users
+-  Critical production databases without backup procedures
 
-## ?? Contributing
+##  Contributing
 
 Contributions are welcome! Please follow these guidelines:
 
@@ -242,7 +220,7 @@ git commit -m "Add: new feature description"
 - Ensure all security features remain intact
 - Test with multiple PHP versions
 
-## ?? License
+##  License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
@@ -270,7 +248,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## ?? Support
+##  Support
 
 ### Getting Help
 - **Live Demo**: [https://5earle.com/database](https://5earle.com/database)
@@ -296,17 +274,17 @@ SOFTWARE.
 - Ensure session directory is writable
 - Verify session cookies are enabled in browser
 
-## ?? Changelog
+##  Changelog
 
 ### Version 1.0.0 (2025-01-XX)
-- ? Initial release
-- ?? Comprehensive security implementation
-- ?? Dark green theme
-- ?? Responsive design
-- ?? Core database management features
+-  Initial release
+-  Comprehensive security implementation
+-  Dark green theme
+-  Responsive design
+-  Core database management features
 
 ---
 
-**Made with ?? by [5earle.com](https://5earle.com)**
+**Made with  by [5earle.com](https://5earle.com)**
 
 *Simple Database Manager - Secure, intuitive, and powerful database management for everyone.*
