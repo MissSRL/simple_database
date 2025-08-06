@@ -61,11 +61,13 @@ $tables = getTables($pdo);
     <?php endif; ?>
 
     <div class="row">
-        <div class="col-md-2">
+        <div class="col-md-2 d-none d-md-block">
             <?= generateSidebar($pdo) ?>
         </div>
 
-        <div class="col-md-9">
+        <?= generateMobileSidebar($pdo) ?>
+
+        <div class="col-12 col-md-9">
             <div class="card mb-3">
                 <div class="card-header">
                     <h6 class="mb-0"><i class="bi bi-code-square"></i> SQL Query Builder</h6>
@@ -271,7 +273,7 @@ $tables = getTables($pdo);
 
 <script src="<?= getBaseUrl() ?>assets/js/query.js"></script>
 <script>
-// Initialize the query page with base URL
+
 initializeQueryPage("<?= getBaseUrl() ?>");
 </script>
 

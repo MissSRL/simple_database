@@ -143,6 +143,14 @@ function restoreBackup($pdo, $sqlContent) {
 <div class="container-fluid">
     <?= generateNavigation('backup') ?>
     
+    <!-- Backup Warning -->
+    <div class="alert alert-warning alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle-fill"></i> 
+        <strong>Important:</strong> It's highly recommended to create a backup of your database before making any changes. 
+        This ensures you can restore your data if something goes wrong.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    
     <?php if (isset($_SESSION['success_message'])): ?>
         <div class="alert alert-success alert-dismissible fade show">
             <i class="bi bi-check-circle"></i> <?= htmlspecialchars($_SESSION['success_message']) ?>
@@ -160,11 +168,13 @@ function restoreBackup($pdo, $sqlContent) {
     <?php endif; ?>
 
     <div class="row">
-        <div class="col-md-2">
+        <div class="col-md-2 d-none d-md-block">
             <?= generateSidebar($pdo) ?>
         </div>
 
-        <div class="col-md-9">
+        <?= generateMobileSidebar($pdo) ?>
+
+        <div class="col-12 col-md-9">
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">
@@ -270,7 +280,7 @@ function restoreBackup($pdo, $sqlContent) {
 
 <script src="<?= getBaseUrl() ?>assets/js/backup.js"></script>
 <script>
-// Initialize the backup page
+
 initializeBackupPage();
 </script>
 

@@ -1,13 +1,9 @@
-/**
- * View Page JavaScript - Table Operations and Bulk Update/Delete
- */
 
-// Global variables (will be set by the PHP page)
 let tableColumns = [];
 let tableName = '';
 let baseUrl = '';
 
-// Initialize the view page functionality
+
 function initializeViewPage(columns, table, url) {
     tableColumns = columns;
     tableName = table;
@@ -18,16 +14,16 @@ function toggleUpdateRecords() {
     const section = document.getElementById('updateRecordsSection');
     const deleteSection = document.getElementById('deleteRecordsSection');
     
-    // Close delete section if open
+    
     if (deleteSection.classList.contains('show')) {
         deleteSection.classList.remove('show');
     }
     
-    // Toggle update section
+    
     section.classList.toggle('show');
     
     if (section.classList.contains('show')) {
-        // Initial preview and setup
+        
         setTimeout(() => {
             buildUpdateSQL();
             setupLivePreview('update');
@@ -39,16 +35,16 @@ function toggleDeleteRecords() {
     const section = document.getElementById('deleteRecordsSection');
     const updateSection = document.getElementById('updateRecordsSection');
     
-    // Close update section if open
+    
     if (updateSection.classList.contains('show')) {
         updateSection.classList.remove('show');
     }
     
-    // Toggle delete section
+    
     section.classList.toggle('show');
     
     if (section.classList.contains('show')) {
-        // Initial preview and setup
+        
         setTimeout(() => {
             buildDeleteSQL();
             setupLivePreview('delete');
@@ -57,10 +53,10 @@ function toggleDeleteRecords() {
 }
 
 function setupLivePreview(type) {
-    // Get the correct container for the section
+    
     const container = document.getElementById(type === 'update' ? 'updateRecordsSection' : 'deleteRecordsSection');
     
-    // Set up event listeners for all existing form elements
+    
     const selects = container.querySelectorAll('select');
     const inputs = container.querySelectorAll('input[type="text"]');
     
@@ -97,7 +93,7 @@ function addSetField() {
     
     container.appendChild(setRow);
     
-    // Add event listeners to the new elements
+    
     const newSelect = setRow.querySelector('select');
     const newInput = setRow.querySelector('input');
     
@@ -145,7 +141,7 @@ function addWhereField(modalType) {
     
     container.appendChild(whereRow);
     
-    // Add event listeners to the new elements
+    
     const selects = whereRow.querySelectorAll('select');
     const input = whereRow.querySelector('input');
     
@@ -160,7 +156,7 @@ function removeField(button, type) {
     const row = button.closest('.row');
     row.remove();
     
-    // Update preview after removing a field
+    
     if (type === 'update') {
         buildUpdateSQL();
     } else {
@@ -178,7 +174,7 @@ function buildUpdateSQL() {
     let setClause = [];
     for (let i = 0; i < setColumns.length; i++) {
         if (setColumns[i].value && setValues[i].value !== undefined) {
-            // Use double quotes for column names and properly escape single quotes in values
+            
             setClause.push("`" + setColumns[i].value + "` = '" + escapeSQL(setValues[i].value) + "'");
         }
     }
@@ -202,7 +198,7 @@ function buildUpdateSQL() {
     
     document.getElementById('updateSqlPreview').textContent = sql;
     
-    // Check if we have enough data for a preview query
+    
     if (setClause.length > 0 && whereClause.length > 0) {
         fetchAffectedRows('update', sql);
     } else {
@@ -234,7 +230,7 @@ function buildDeleteSQL() {
     
     document.getElementById('deleteSqlPreview').textContent = sql;
     
-    // Check if we have enough data for a preview query
+    
     if (whereClause.length > 0) {
         fetchAffectedRows('delete', sql);
     } else {
@@ -253,19 +249,19 @@ function fetchAffectedRows(operation, sql) {
     const previewContainer = document.getElementById(operation === 'update' ? 'updatePreviewResult' : 'deletePreviewResult');
     previewContainer.innerHTML = '<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
     
-    // Create the query preview data
+    
     const formData = new FormData();
     formData.append('preview_query', sql);
     formData.append('operation', operation);
     formData.append('table', tableName);
     
-    // Use the baseUrl variable defined at the top of the script
+    
     fetch(baseUrl + 'preview_query.php', {
         method: 'POST',
         body: formData
     })
     .then(response => {
-        // Check if the response is JSON
+        
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
             return response.json();
@@ -284,13 +280,13 @@ function fetchAffectedRows(operation, sql) {
                 html += '<div class="table-responsive" style="max-height:200px;"><table class="table table-sm table-dark">';
                 html += '<thead><tr>';
                 
-                // Headers
+                
                 for (const key in data.sample[0]) {
                     html += `<th>${escapeHtml(key)}</th>`;
                 }
                 html += '</tr></thead><tbody>';
                 
-                // Rows
+                
                 data.sample.forEach(row => {
                     html += '<tr>';
                     for (const key in row) {

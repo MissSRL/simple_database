@@ -139,29 +139,47 @@ function generateNavigation($currentPage = '') {
     return '
     <nav class="navbar navbar-expand-lg ' . $navbarClass . ' mb-4">
         <div class="container-fluid">
+            <!-- Mobile sidebar toggle button -->
+            <button class="mobile-toggle-btn d-lg-none" onclick="toggleMobileSidebar()" aria-label="Toggle sidebar">
+                <i class="bi bi-list"></i>
+            </button>
+            
             <a class="navbar-brand" href="' . $baseUrl . '">
-                <i class="bi bi-database-gear"></i> Simple Database
+                <i class="bi bi-database-gear"></i> 
+                <span class="d-none d-sm-inline">Simple Database</span>
+                <span class="d-sm-none">DB</span>
             </a>
             
-            <!-- Main Menu - Horizontal -->
-            <div class="navbar-nav me-auto">
-                <a class="nav-link ' . $tablesActive . '" href="' . $baseUrl . 'view">
-                    <i class="bi bi-table"></i> Tables
-                </a>
-                <a class="nav-link ' . $queryActive . '" href="' . $baseUrl . 'query">
-                    <i class="bi bi-search"></i> Query Builder
-                </a>
-                <a class="nav-link ' . $backupActive . '" href="' . $baseUrl . 'backup">
-                    <i class="bi bi-cloud-download"></i> Backup & Restore
-                </a>
-            </div>
+            <!-- Mobile menu toggle -->
+            <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-three-dots-vertical"></i>
+            </button>
             
-            <!-- Right side - connection info and disconnect -->
-            <div class="navbar-nav ms-auto">
-                <span class="navbar-text me-3">' . htmlspecialchars($connectionInfo) . '</span>
-                <a class="nav-button btn btn-outline-light btn-sm" href="' . $baseUrl . '?disconnect=1">
-                    <i class="bi bi-box-arrow-right"></i> Disconnect
-                </a>
+            <!-- Collapsible menu -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Main Menu -->
+                <div class="navbar-nav me-auto">
+                    <a class="nav-link ' . $tablesActive . '" href="' . $baseUrl . 'view">
+                        <i class="bi bi-table"></i> <span class="nav-text">Tables</span>
+                    </a>
+                    <a class="nav-link ' . $queryActive . '" href="' . $baseUrl . 'query">
+                        <i class="bi bi-search"></i> <span class="nav-text">Query Builder</span>
+                    </a>
+                    <a class="nav-link ' . $backupActive . '" href="' . $baseUrl . 'backup">
+                        <i class="bi bi-cloud-download"></i> <span class="nav-text">Backup & Restore</span>
+                    </a>
+                </div>
+                
+                <!-- Right side - connection info and disconnect -->
+                <div class="navbar-nav ms-auto">
+                    <span class="navbar-text me-3 d-none d-lg-block">' . htmlspecialchars($connectionInfo) . '</span>
+                    <a class="nav-link d-lg-none" href="' . $baseUrl . '?disconnect=1">
+                        <i class="bi bi-box-arrow-right"></i> <span class="nav-text">Disconnect</span>
+                    </a>
+                    <a class="nav-button btn btn-outline-light btn-sm d-none d-lg-inline-flex" href="' . $baseUrl . '?disconnect=1">
+                        <i class="bi bi-box-arrow-right"></i> Disconnect
+                    </a>
+                </div>
             </div>
         </div>
     </nav>';
@@ -177,23 +195,89 @@ function generateSidebar($pdo, $currentTable = '') {
         <div class="card-header">
             <h6 class="mb-0"><i class="bi bi-list"></i> Tables <span class="badge bg-secondary ms-2">' . count($tables) . '</span></h6>
         </div>
-        <div class="card-body p-2">
-            <div class="list-group list-group-flush">';
+        <div class="card-body p-2">';
     
-    foreach ($tables as $table) {
-        $active = ($table === $currentTable) ? 'active' : '';
+    if (empty($tables)) {
         $sidebar .= '
+            <div class="text-center text-muted p-3">
+                <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                <p class="mt-2 mb-0">No tables found</p>
+                <small>Create your first table to get started</small>
+            </div>';
+    } else {
+        $sidebar .= '
+            <div class="list-group list-group-flush">';
+        
+        foreach ($tables as $table) {
+            $active = ($table === $currentTable) ? 'active' : '';
+            $sidebar .= '
                 <a href="' . $baseUrl . 'view?table=' . urlencode($table) . '" class="list-group-item list-group-item-action ' . $active . '">
                     <i class="bi bi-table me-2"></i>' . htmlspecialchars($table) . '
                 </a>';
+        }
+        
+        $sidebar .= '
+            </div>';
     }
     
     $sidebar .= '
-            </div>
         </div>
     </div>';
     
     return $sidebar;
+}
+
+function generateMobileSidebar($pdo, $currentTable = '') {
+    $tables = getTables($pdo);
+    $baseUrl = getBaseUrl();
+    
+    $mobileSidebar = '
+        <!-- Mobile sidebar overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
+        
+        <!-- Mobile sidebar -->
+        <div class="sidebar-mobile" id="mobileSidebar">
+            <div class="sidebar-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-list"></i> Tables 
+                    <span class="badge bg-secondary ms-2">' . count($tables) . '</span>
+                </h6>
+                <button class="sidebar-close" onclick="closeMobileSidebar()">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div class="p-2">';
+    
+    if (empty($tables)) {
+        $mobileSidebar .= '
+                <div class="text-center text-muted p-3">
+                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                    <p class="mt-2 mb-0">No tables found</p>
+                    <small>Create your first table to get started</small>
+                </div>';
+    } else {
+        $mobileSidebar .= '
+                <div class="list-group list-group-flush">';
+        
+        foreach ($tables as $table) {
+            $active = ($table === $currentTable) ? 'active' : '';
+            $mobileSidebar .= '
+                    <a href="' . $baseUrl . 'view?table=' . urlencode($table) . '" 
+                       class="list-group-item list-group-item-action ' . $active . '"
+                       onclick="closeMobileSidebar()">
+                        <i class="bi bi-table me-2"></i>' . htmlspecialchars($table) . '
+                    </a>';
+        }
+        
+        $mobileSidebar .= '
+                </div>';
+    }
+    
+    $mobileSidebar .= '
+            </div>
+        </div>';
+    
+    return $mobileSidebar;
 }
 
 
@@ -230,20 +314,37 @@ function getBaseUrl() {
     return $scriptDir;
 }
 
+function downloadBackup($backupContent, $databaseName) {
+    $filename = "backup_{$databaseName}_" . date('Y-m-d_H-i-s') . ".sql";
+    
+    header('Content-Type: application/sql');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    header('Content-Length: ' . strlen($backupContent));
+    header('Cache-Control: must-revalidate');
+    header('Pragma: public');
+    
+    echo $backupContent;
+    exit();
+}
+
 function generateFooter() {
     $baseUrl = getBaseUrl();
     $currentYear = date('Y');
     return '
     <!-- Site Footer - Fixed -->
     <footer class="site-footer fixed-bottom">
-        <div class="footer-bottom">
-            <div class="container-fluid">
-                <small>&copy; ' . $currentYear . ' 5earle.com - Simple Database</small>
-            </div>
+        <div class="container-fluid text-center">
+            <small>
+                &copy; ' . $currentYear . ' 5earle.com - Simple Database | 
+                <a href="https://github.com/MissSRL/simple_database" target="_blank" rel="noopener noreferrer">
+                    <i class="bi bi-github"></i> Host Your Own
+                </a>
+            </small>
         </div>
     </footer>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="' . $baseUrl . 'assets/js/mobile.js"></script>
 </body>
 </html>';
 }

@@ -1,4 +1,4 @@
-// query.js - Query builder and SQL editor functionality
+
 
 let tableColumns = {};
 let baseUrl = '';
@@ -6,11 +6,11 @@ let baseUrl = '';
 function initializeQueryPage(baseUrlParam) {
     baseUrl = baseUrlParam;
     
-    // Initialize event listeners
+    
     document.addEventListener('DOMContentLoaded', function() {
         checkForDangerousQuery();
         
-        // Setup table select change listener
+        
         const tableSelect = document.getElementById('tableSelect');
         if (tableSelect) {
             tableSelect.addEventListener('change', handleTableChange);
@@ -41,7 +41,7 @@ function handleTableChange() {
     const orderByColumn = document.getElementById('orderByColumn');
     
     if (table) {
-        // Fetch columns for selected table
+        
         console.log('Fetching columns for table:', table);
         console.log('Request URL:', `${baseUrl}get_columns.php?table=${encodeURIComponent(table)}`);
         
@@ -57,14 +57,14 @@ function handleTableChange() {
                 console.log('Received columns:', columns);
                 tableColumns[table] = columns;
                 
-                // Update column select
+                
                 columnSelect.innerHTML = '<option value="*">* (All columns)</option>';
                 columns.forEach(column => {
                     columnSelect.innerHTML += `<option value="${column.Field}">${column.Field}</option>`;
                 });
                 columnSelect.disabled = false;
                 
-                // Update condition columns
+                
                 conditionColumns.forEach(select => {
                     select.innerHTML = '<option value="">Column...</option>';
                     columns.forEach(column => {
@@ -73,7 +73,7 @@ function handleTableChange() {
                     select.disabled = false;
                 });
                 
-                // Update order by column
+                
                 orderByColumn.innerHTML = '<option value="">Order by column...</option>';
                 columns.forEach(column => {
                     orderByColumn.innerHTML += `<option value="${column.Field}">${column.Field}</option>`;
@@ -85,7 +85,7 @@ function handleTableChange() {
                 alert('Failed to load columns for the selected table. Please check the console for details.');
             });
     } else {
-        // Reset form elements
+        
         columnSelect.innerHTML = '<option value="*">* (All columns)</option>';
         columnSelect.disabled = true;
         
@@ -164,7 +164,7 @@ function generateQuery() {
     
     let query = 'SELECT ';
     
-    // Handle columns
+    
     const selectedColumns = Array.from(document.getElementById('columnSelect').selectedOptions).map(option => option.value);
     if (selectedColumns.length === 0 || selectedColumns.includes('*')) {
         query += '*';
@@ -174,7 +174,7 @@ function generateQuery() {
     
     query += ` FROM \`${table}\``;
     
-    // Handle conditions
+    
     const conditions = [];
     document.querySelectorAll('.condition-row').forEach(row => {
         const column = row.querySelector('.condition-column').value;
@@ -199,20 +199,23 @@ function generateQuery() {
         query += ' WHERE ' + conditions.join(' AND ');
     }
     
-    // Handle ORDER BY
+    
     const orderByColumn = document.getElementById('orderByColumn').value;
     const orderByDirection = document.getElementById('orderByDirection').value;
     if (orderByColumn) {
         query += ` ORDER BY \`${orderByColumn}\` ${orderByDirection}`;
     }
     
-    // Handle LIMIT
+    
     const limit = document.getElementById('limitValue').value;
     if (limit) {
         query += ` LIMIT ${limit}`;
     }
     
     document.getElementById('query').value = query;
+    
+    
+    scrollToElementOnMobile('query');
 }
 
 function resetBuilder() {
@@ -268,7 +271,7 @@ function formatQuery() {
     if (!query) return;
     
     const formatted = query
-        // Main SQL commands
+        
         .replace(/\bSELECT\b/gi, '\nSELECT')
         .replace(/\bINSERT\s+INTO\b/gi, '\nINSERT INTO')
         .replace(/\bUPDATE\b/gi, '\nUPDATE')
@@ -278,7 +281,7 @@ function formatQuery() {
         .replace(/\bALTER\s+TABLE\b/gi, '\nALTER TABLE')
         .replace(/\bTRUNCATE\s+TABLE\b/gi, '\nTRUNCATE TABLE')
         
-        // Query clauses
+        
         .replace(/\bFROM\b/gi, '\nFROM')
         .replace(/\bSET\b/gi, '\nSET')
         .replace(/\bVALUES\b/gi, '\nVALUES')
@@ -289,28 +292,31 @@ function formatQuery() {
         .replace(/\bLIMIT\b/gi, '\nLIMIT')
         .replace(/\bOFFSET\b/gi, '\nOFFSET')
         
-        // Joins
+        
         .replace(/\b(INNER\s+JOIN|LEFT\s+JOIN|RIGHT\s+JOIN|FULL\s+OUTER\s+JOIN|JOIN)\b/gi, '\n$1')
         .replace(/\bON\b/gi, '\n  ON')
         
-        // Logical operators
+        
         .replace(/\bAND\b/gi, '\n  AND')
         .replace(/\bOR\b/gi, '\n  OR')
         
-        // Clean up extra newlines
+        
         .replace(/\n\s*\n/g, '\n')
         .trim();
     
     document.getElementById('query').value = formatted;
     
-    // Re-check for dangerous queries after formatting
+    
     checkForDangerousQuery();
+    
+    
+    scrollToElementOnMobile('query');
 }
 
 function clearQuery() {
     if (confirm('Are you sure you want to clear the query?')) {
         document.getElementById('query').value = '';
-        checkForDangerousQuery(); // Re-check after clearing
+        checkForDangerousQuery(); 
     }
 }
 
@@ -319,14 +325,14 @@ function checkForDangerousQuery() {
     const dangerWarning = document.getElementById('dangerWarning');
     const executeButton = document.getElementById('executeButton');
     
-    // Define dangerous patterns
+    
     const dangerousPatterns = [
         /\bDROP\s+(TABLE|DATABASE|INDEX|VIEW)\b/i,
         /\bDELETE\s+FROM\b/i,
         /\bTRUNCATE\s+TABLE\b/i
     ];
     
-    // Check if query contains dangerous patterns
+    
     const isDangerous = dangerousPatterns.some(pattern => pattern.test(query));
     
     if (isDangerous && query.trim() !== '') {
@@ -345,14 +351,14 @@ function checkForDangerousQuery() {
 function validateDangerousQuery() {
     const query = document.getElementById('query').value.toUpperCase();
     
-    // Define dangerous patterns with their actions
+    
     const dangerousPatterns = [
         { pattern: /\bDROP\s+(TABLE|DATABASE|INDEX|VIEW)\b/i, action: 'DROP' },
         { pattern: /\bDELETE\s+FROM\b/i, action: 'DELETE' },
         { pattern: /\bTRUNCATE\s+TABLE\b/i, action: 'TRUNCATE' }
     ];
     
-    // Check each dangerous pattern
+    
     for (const dangerous of dangerousPatterns) {
         if (dangerous.pattern.test(query)) {
             const confirmMessage = `?? DANGER: You are about to execute a ${dangerous.action} operation!
@@ -385,11 +391,11 @@ function exportResults() {
     
     let csv = '';
     
-    // Add headers
+    
     const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent);
     csv += headers.join(',') + '\n';
     
-    // Add data rows
+    
     table.querySelectorAll('tbody tr').forEach(row => {
         const cells = Array.from(row.querySelectorAll('td')).map(td => {
             let value = td.textContent;
@@ -401,7 +407,7 @@ function exportResults() {
         csv += cells.join(',') + '\n';
     });
     
-    // Download CSV
+    
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');

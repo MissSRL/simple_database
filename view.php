@@ -11,21 +11,103 @@ $page = max(1, intval($_GET['page'] ?? 1));
 $baseUrl = getBaseUrl();
 
 
+$tables = getTables($pdo);
+
 if (!$table) {
-    $tables = getTables($pdo);
     if (!empty($tables)) {
         header('Location: ' . $baseUrl . 'view?table=' . urlencode($tables[0]));
         exit();
     }
+    
 }
 
 
-if (!validateTable($pdo, $table)) {
+if ($table && !validateTable($pdo, $table)) {
     $_SESSION['error_message'] = 'Table not found: ' . htmlspecialchars($table);
     header('Location: ' . $baseUrl . 'view');
     exit();
 }
 
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_table'])) {
+    try {
+        $tableName = trim($_POST['table_name']);
+        $columns = $_POST['columns'] ?? [];
+        
+        if (empty($tableName)) {
+            throw new Exception('Table name is required');
+        }
+        
+        
+        if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $tableName)) {
+            throw new Exception('Table name must start with a letter and contain only letters, numbers, and underscores');
+        }
+        
+        $sql = "CREATE TABLE `{$tableName}` (";
+        $columnDefinitions = [];
+        
+        foreach ($columns as $index => $column) {
+            $colName = trim($column['name']);
+            $colType = trim($column['type']);
+            $colLength = trim($column['length'] ?? '');
+            $colNull = isset($column['null']) ? 'NULL' : 'NOT NULL';
+            $colDefault = trim($column['default'] ?? '');
+            $colPrimary = isset($column['primary']);
+            $colAutoIncrement = isset($column['auto_increment']);
+            
+            if (empty($colName) || empty($colType)) {
+                continue;
+            }
+            
+            
+            if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $colName)) {
+                throw new Exception("Column name '{$colName}' is invalid");
+            }
+            
+            $definition = "`{$colName}` {$colType}";
+            
+            
+            if ($colLength && in_array(strtoupper($colType), ['VARCHAR', 'CHAR', 'DECIMAL', 'NUMERIC'])) {
+                $definition .= "({$colLength})";
+            }
+            
+            $definition .= " {$colNull}";
+            
+            if ($colAutoIncrement) {
+                $definition .= " AUTO_INCREMENT";
+            }
+            
+            if ($colDefault) {
+                if (strtoupper($colDefault) === 'CURRENT_TIMESTAMP') {
+                    $definition .= " DEFAULT CURRENT_TIMESTAMP";
+                } else {
+                    $definition .= " DEFAULT '{$colDefault}'";
+                }
+            }
+            
+            if ($colPrimary) {
+                $definition .= " PRIMARY KEY";
+            }
+            
+            $columnDefinitions[] = $definition;
+        }
+        
+        if (empty($columnDefinitions)) {
+            throw new Exception('At least one column is required');
+        }
+        
+        $sql .= implode(', ', $columnDefinitions) . ")";
+        
+        $pdo->exec($sql);
+        
+        $_SESSION['success_message'] = "Table '{$tableName}' created successfully.";
+        header('Location: ' . $baseUrl . 'view?table=' . urlencode($tableName));
+        exit();
+        
+    } catch (Exception $e) {
+        $_SESSION['error_message'] = 'Table creation failed: ' . $e->getMessage();
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_record'])) {
     try {
@@ -157,11 +239,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_record'])) {
 }
 
 
-$tableData = getTableData($pdo, $table, $page);
-$columns = getTableColumns($pdo, $table);
+$tableData = null;
+$columns = [];
+
+if (!empty($tables) && $table) {
+    $tableData = getTableData($pdo, $table, $page);
+    $columns = getTableColumns($pdo, $table);
+}
+
+
+$pageTitle = empty($tables) ? "Create Table" : ($table ? "View Table: {$table}" : "Database Tables");
 ?>
 
-<?= generateHead("View Table: {$table}"); ?>
+<?= generateHead($pageTitle); ?>
 
 <div class="container-fluid">
     <?= generateNavigation('view') ?>
@@ -183,30 +273,128 @@ $columns = getTableColumns($pdo, $table);
     <?php endif; ?>
 
     <div class="row">
-        <div class="col-md-2">
+        <!-- Desktop sidebar -->
+        <div class="col-md-2 d-none d-md-block">
             <?= generateSidebar($pdo, $table) ?>
         </div>
 
-        <div class="col-md-9">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">
-                        <i class="bi bi-table"></i> <?= htmlspecialchars($table) ?>
-                        <span class="badge bg-secondary ms-2"><?= number_format($tableData['total']) ?> records</span>
-                    </h6>
-                    <div class="header-actions">
-                        <a href="<?= $baseUrl ?>insert?table=<?= urlencode($table) ?>" class="btn btn-success btn-sm">
-                            <i class="bi bi-plus-circle"></i> Add Record
-                        </a>
-                        <button class="btn btn-warning btn-sm" onclick="toggleUpdateRecords()">
-                            <i class="bi bi-pencil"></i> Update Records
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="toggleDeleteRecords()">
-                            <i class="bi bi-trash"></i> Delete Records
-                        </button>
-                        <button class="btn btn-outline-primary btn-sm" onclick="location.reload()">
-                            <i class="bi bi-arrow-clockwise"></i> Refresh
-                        </button>
+        <?= generateMobileSidebar($pdo, $table) ?>
+
+        <div class="col-12 col-md-9">
+            <?php if (empty($tables)): ?>
+                <!-- No tables exist - show create table interface -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="bi bi-plus-circle"></i> Create Your First Table
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Welcome!</strong> No tables found in this database. Create your first table to get started.
+                        </div>
+                        
+                        <form method="POST">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="table_name" class="form-label">Table Name</label>
+                                    <input type="text" class="form-control" id="table_name" name="table_name" required 
+                                           placeholder="e.g., users, products, orders">
+                                    <div class="form-text">Must start with a letter, contain only letters, numbers, and underscores</div>
+                                </div>
+                            </div>
+                            
+                            <h6 class="text-primary mb-3">Table Columns</h6>
+                            <div id="columnsContainer">
+                                <div class="row mb-2 column-row">
+                                    <div class="col-md-3">
+                                        <input type="text" class="form-control" name="columns[0][name]" placeholder="Column name" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <select class="form-select" name="columns[0][type]" required>
+                                            <option value="">Type</option>
+                                            <option value="INT">INT</option>
+                                            <option value="BIGINT">BIGINT</option>
+                                            <option value="VARCHAR">VARCHAR</option>
+                                            <option value="TEXT">TEXT</option>
+                                            <option value="DECIMAL">DECIMAL</option>
+                                            <option value="DATETIME">DATETIME</option>
+                                            <option value="DATE">DATE</option>
+                                            <option value="TIME">TIME</option>
+                                            <option value="BOOLEAN">BOOLEAN</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="text" class="form-control" name="columns[0][length]" placeholder="Length">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="text" class="form-control" name="columns[0][default]" placeholder="Default">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="columns[0][null]" id="null_0">
+                                            <label class="form-check-label" for="null_0">NULL</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="columns[0][primary]" id="primary_0">
+                                            <label class="form-check-label" for="primary_0">PK</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="columns[0][auto_increment]" id="ai_0">
+                                            <label class="form-check-label" for="ai_0">AI</label>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-success btn-sm mt-1" onclick="addColumn()">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-warning">
+                                <i class="bi bi-lightbulb"></i>
+                                <strong>Tip:</strong> PK = Primary Key, AI = Auto Increment. Most tables should have an auto-incrementing primary key.
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button type="submit" name="create_table" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle"></i> Create Table
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="addSampleColumns()">
+                                    <i class="bi bi-magic"></i> Add Sample Columns
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            <?php else: ?>
+                <!-- Tables exist - show normal table view -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="bi bi-table"></i> <?= htmlspecialchars($table) ?>
+                            <?php if ($tableData): ?>
+                                <span class="badge bg-secondary ms-2"><?= number_format($tableData['total']) ?> records</span>
+                            <?php endif; ?>
+                        </h6>
+                        <?php if ($table): ?>
+                            <div class="header-actions">
+                                <a href="<?= $baseUrl ?>insert?table=<?= urlencode($table) ?>" class="btn btn-success btn-sm">
+                                    <i class="bi bi-plus-circle"></i> Add Record
+                                </a>
+                                <button class="btn btn-warning btn-sm" onclick="toggleUpdateRecords()">
+                                    <i class="bi bi-pencil"></i> Update Records
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="toggleDeleteRecords()">
+                                    <i class="bi bi-trash"></i> Delete Records
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm" onclick="location.reload()">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                                </button>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
                 
@@ -481,18 +669,24 @@ $columns = getTableColumns($pdo, $table);
                     <?php endif; ?>
                 </div>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>
 
 <script src="<?= $baseUrl ?>assets/js/view.js"></script>
+<script src="<?= $baseUrl ?>assets/js/app.js"></script>
+<?php if (empty($tables)): ?>
+<script src="<?= $baseUrl ?>assets/js/create_table.js"></script>
+<?php else: ?>
 <script>
-// Initialize the view page with data from PHP
+
 initializeViewPage(
     <?= json_encode($columns) ?>,
     "<?= addslashes($table) ?>",
     "<?= $baseUrl ?>"
 );
 </script>
+<?php endif; ?>
 
 <?= generateFooter() ?>

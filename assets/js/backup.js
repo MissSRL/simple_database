@@ -1,4 +1,4 @@
-// backup.js - Backup and restore functionality
+
 
 function initializeBackupPage() {
     document.addEventListener('DOMContentLoaded', function() {
