@@ -64,26 +64,6 @@ A secure, web-based MySQL database management tool designed for developers and d
 
 >  **Try it first**: Check out the [live demo](https://5earle.com/database) to see the application in action before installing.
 
-### Nginx Configuration Example
-```nginx
-location / {
-    try_files $uri $uri/ /index.php$query_string;
-}
-
-location ~ \.php$ {
-    fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
-    fastcgi_index index.php;
-    include fastcgi_params;
-    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-}
-
-# Security headers
-add_header X-Frame-Options "SAMEORIGIN" always;
-add_header X-Content-Type-Options "nosniff" always;
-add_header X-XSS-Protection "1; mode=block" always;
-add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-```
-
 ##  Security Features
 
 ### Built-in Protections
@@ -101,15 +81,6 @@ add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 - [ ] Keep PHP and dependencies updated
 - [ ] Monitor access logs for suspicious activity
 - [ ] Consider IP whitelisting for admin access
-
-### Security Headers (via .htaccess)
-```apache
-Header always set X-Frame-Options "SAMEORIGIN"
-Header always set X-Content-Type-Options "nosniff"
-Header always set X-XSS-Protection "1; mode=block"
-Header always set Referrer-Policy "strict-origin-when-cross-origin"
-Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
-```
 
 ##  Usage Guide
 
@@ -276,7 +247,7 @@ SOFTWARE.
 
 ##  Changelog
 
-### Version 1.0.0 (2025-01-XX)
+### Version 1.0.0 (2025-06-08)
 -  Initial release
 -  Comprehensive security implementation
 -  Dark green theme
@@ -285,6 +256,6 @@ SOFTWARE.
 
 ---
 
-**Made with  by [5earle.com](https://5earle.com)**
+**Made by [5earle.com](https://5earle.com)**
 
 *Simple Database Manager - Secure, intuitive, and powerful database management for everyone.*
